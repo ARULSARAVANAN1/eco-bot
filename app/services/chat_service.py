@@ -3,30 +3,7 @@ import random
 from groq import Groq
 
 from app.core.config import settings
-from app.core.vector_store import get_collection, get_embed_model
-
-# --------------------------------------------------------------------------- #
-# Constants                                                                     #
-# --------------------------------------------------------------------------- #
-
-GREETING_INPUTS = {
-    "hi", "hello", "hey", "hiya", "howdy", "greetings",
-    "good morning", "good afternoon", "good evening",
-    "what's up", "whats up", "sup", "how are you",
-    "how r you", "how do you do", "nice to meet you",
-    "pleased to meet you", "hi there", "hello there",
-}
-
-GREETING_RESPONSES = [
-    "Hello! 👋 Welcome to Eco-Bot! I'm here to help you learn about e-waste "
-    "and sustainable electronics disposal. What would you like to know?",
-    "Hi there! 🌿 Great to see you! I'm Eco-Bot, your guide to understanding "
-    "e-waste and how to manage it responsibly. Ask me anything!",
-    "Hey! 😊 Welcome! I'm Eco-Bot — ready to help you explore e-waste awareness "
-    "and sustainable practices. How can I assist you today?",
-    "Greetings! 🌍 I'm Eco-Bot, here to help you understand the impact of "
-    "electronic waste and how to handle it sustainably. What's on your mind?",
-]
+from app.core.vector_store import get_collection
 
 SYSTEM_PROMPT = (
     "You are Eco-Bot, a sharp and friendly AI guide specialising in e-waste awareness "
@@ -51,11 +28,11 @@ def _get_groq_client() -> Groq:
 
 def _retrieve(query: str) -> list[str]:
     """Return top-k relevant text chunks from ChromaDB."""
-    embed_model = get_embed_model()
     collection = get_collection()
-
-    q_embed = embed_model.encode([query]).tolist()
-    results = collection.query(query_embeddings=q_embed, n_results=settings.retrieve_top_k)
+    results = collection.query(
+        query_texts=[query],  # ← use query_texts instead of query_embeddings
+        n_results=settings.retrieve_top_k
+    )
     return results["documents"][0]
 
 
